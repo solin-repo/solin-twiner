@@ -14,7 +14,7 @@
             <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         </KEYS>
         <INDEXES>
-            <INDEX NAME="eventname" UNIQUE="false" FIELDS="component"/>
+            <INDEX NAME="eventname" UNIQUE="false" FIELDS="eventname"/>
         </INDEXES>
     </TABLE>
     <TABLE NAME="twiner_notifications" COMMENT="Store information about notification actions">
@@ -26,6 +26,17 @@
             <FIELD NAME="target_id" TYPE="int" LENGTH="10" NOTNULL="true"  SEQUENCE="false" DEFAULT="0"  COMMENT="Target id, depends on type"/>
             <FIELD NAME="subject" TYPE="char" LENGTH="400" NOTNULL="true"  SEQUENCE="false" DEFAULT="New message"  COMMENT="Message subject"/>
             <FIELD NAME="body" TYPE="text" NOTNULL="true"   SEQUENCE="false" COMMENT="Target id, depends on type"/>
+        </FIELDS>
+        <KEYS>
+            <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            <KEY NAME="trigger" TYPE="foreign" FIELDS="trigger_id" REFTABLE="twiner_triggers" REFFIELDS="id"/>
+        </KEYS>
+    </TABLE>
+    <TABLE NAME="twiner_enroll" COMMENT="Store information about enroll actions">
+        <FIELDS>
+            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+            <FIELD NAME="creator_id" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Creatot. 0 if created by admin."/>
+            <FIELD NAME="trigger_id" TYPE="int" LENGTH="9" NOTNULL="true" SEQUENCE="false" COMMENT="Associated trigger from twiner_triggers"/>
         </FIELDS>
         <KEYS>
             <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

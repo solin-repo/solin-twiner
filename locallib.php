@@ -13,11 +13,8 @@ function local_solin_twiner_notify($event,$trigger) {
     if(count($notifications))
         foreach($notifications as $notification)
         {
-            syslog(1,'local lib foreach');
-
             switch($notification->targettype){
                 case "individual":
-                    syslog(1,'local individual');
                     twiner_send($notification->target_id,$notification->subject,$notification->body);
                     break;
                 case "course":
@@ -32,6 +29,8 @@ function local_solin_twiner_notify($event,$trigger) {
 
 /**
  * Processing enroll action
+ * @param $event    - hadnled event
+ * @param $trigger  - triggers from DB
  */
 function local_solin_twiner_enroll($event,$trigger) {
     global $DB;
@@ -39,6 +38,8 @@ function local_solin_twiner_enroll($event,$trigger) {
 
 /**
  * Processing group action
+ * @param $event    - hadnled event
+ * @param $trigger  - triggers from DB
  */
 function local_solin_twiner_group($event,$trigger) {
     global $DB;
@@ -46,6 +47,8 @@ function local_solin_twiner_group($event,$trigger) {
 
 /**
  * Processing assign to cohort action
+ * @param $event    - hadnled event
+ * @param $trigger  - triggers from DB
  */
 function local_solin_twiner_assign($event,$trigger) {
     global $DB;

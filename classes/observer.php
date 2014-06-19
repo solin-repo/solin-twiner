@@ -10,11 +10,8 @@ class local_solin_twiner_observer {
             if(count($triggers))
                 foreach($triggers as $trigger)
                 {
-
-                    syslog(1,'foreach triggers observer'.$trigger->action);
                     switch ($trigger->action){
                         case "notify":
-                            syslog(1,'notify case in foreach');
                             local_solin_twiner_notify($event,$trigger);
                             break;
                         case "enroll":
