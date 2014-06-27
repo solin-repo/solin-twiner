@@ -4,7 +4,7 @@ require_once($CFG->dirroot . '/local/solin_twiner/locallib.php');
 class local_solin_twiner_observer {
     public static function check_user_defined_handlers($event) {
         global $DB;
-        $triggers = $DB->get_records('twiner_triggers',array('component'=>$event->eventname));
+        $triggers = $DB->get_records('twiner_triggers',array('eventname'=>$event->eventname));
         if(count($triggers))
         {
             if(count($triggers))
