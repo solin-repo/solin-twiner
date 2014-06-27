@@ -54,7 +54,7 @@ if(isset($new_trigger['add'])&&$new_trigger['add']==1&&isset($selected_trigger)&
                     <?
                     foreach($available_events as $trigger)
                     {
-                        eval('$name = '.$trigger->eventname.'::get_name();');
+                        $name = call_user_func(array($trigger->eventname, 'get_name'));
                         echo '<option value="'.$trigger->id.'" '.(($trigger->id==$event)?'selected':'').' >'.$name.'</option>';
                     }
                     ?>
