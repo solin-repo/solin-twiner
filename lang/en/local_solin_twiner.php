@@ -20,3 +20,4 @@ $string['event']='Event';
 $string['type']='Type';
 $string['target']='User';
 $string['individual']='Individual';
+$string['remove'] = 'Remove';
