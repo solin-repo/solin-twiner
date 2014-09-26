@@ -11,6 +11,7 @@ function local_solin_twiner_notify($event, $trigger) {
     global $DB;
     $notifications = $DB->get_records('twiner_notifications', array('trigger_id' => $trigger->id));
     if (count($notifications))
+	{
         foreach ($notifications as $notification)
         {
             switch ($notification->targettype){
@@ -31,15 +32,41 @@ function local_solin_twiner_notify($event, $trigger) {
                     break;
             }
         }
+	}
 }
 
 /**
- * Processing enroll action
+ * Processing enrol action
  * @param $event    - handled event
  * @param $trigger  - triggers from DB
  */
-function local_solin_twiner_enroll($event, $trigger) {
-    global $DB;
+function local_solin_twiner_enrol($event, $trigger) {
+    global $DB, $CFG;
+    $enrollments = $DB->get_records('twiner_enrol', array('trigger_id' => $trigger->id));
+    if (count($enrollments))
+	{
+		$enrollment_plugin = enrol_get_plugin('manual');
+		foreach ($enrollments as $enrollment)
+		{
+			$current_instance = false;
+			if (!is_enrolled(context_course::instance($enrollment->course_id), $enrollment->user_id))
+			{
+				if ($instances = enrol_get_instances($enrollment->course_id, false)) 
+				{
+					foreach ($instances as $instance) 
+					{
+						if ($instance->enrol === 'manual') 
+						{
+							$current_instance = $instance;
+							break;
+						}
+					}
+				}
+				
+				if ($current_instance !== false) $enrollment_plugin->enrol_user($current_instance, $enrollment->user_id);
+			}
+		}
+	}
 }
 
 /**

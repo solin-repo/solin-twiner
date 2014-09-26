@@ -3,39 +3,50 @@ defined('MOODLE_INTERNAL') || die();
 
 class local_solin_twiner_form_helper 
 {
+	public static function give_table_rows()
+	{	
+		$table_rows = "";
+		$table_rows .= self::give_targettype_table_row();
+		$table_rows .= self::give_target_id_options_table_row();
+		$table_rows .= self::give_subject_and_message_table_rows();
+		$table_rows .= self::give_course_enrol_table_row();
 
-	public static function give_targettype_table_row($trigger) 
+		return $table_rows;
+
+	}
+	public static function give_targettype_table_row() 
 	{
-		global $targettype;
+		global $selected_trigger, $targettype;
 
-		$targettype_string = "";
+		$tablerow = "";
 
-		if ($trigger == 'notify')
+		if ($selected_trigger->action == 'notify')
 		{
-			$targettype_string .= "<tr>\n";
-			$targettype_string .= "<td>" . get_string('select_targettype', 'local_solin_twiner') . ":</td>\n";
-			$targettype_string .= "<td>\n";
-			$targettype_string .= "<select name=\"trigger[targettype]\" onchange=\"document.twiner_form.submit();\">\n";
-			$targettype_string .= "<option value=\"individual\"" . (($targettype == strtolower(get_string('individual', 'local_solin_twiner')))?" selected":"") . ">" . get_string('individual', 'local_solin_twiner') . "</option>\n";
-			$targettype_string .= "<option value=\"course\"" . (($targettype == strtolower(get_string('course', 'local_solin_twiner')))?" selected":"") . ">" . get_string('course', 'local_solin_twiner') . "</option>\n";
-			$targettype_string .= "</select>\n";
-			$targettype_string .= "</td>\n";
-			$targettype_string .= "</tr>\n";               
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td>" . get_string('select_targettype', 'local_solin_twiner') . ":</td>\n";
+			$tablerow .= "<td>\n";
+			$tablerow .= "<select name=\"trigger[targettype]\" onchange=\"document.twiner_form.submit();\">\n";
+			$tablerow .= "<option value=\"individual\"" . (($targettype == strtolower(get_string('individual', 'local_solin_twiner')))?" selected":"") . ">" . get_string('individual', 'local_solin_twiner') . "</option>\n";
+			$tablerow .= "<option value=\"course\"" . (($targettype == strtolower(get_string('course', 'local_solin_twiner')))?" selected":"") . ">" . get_string('course', 'local_solin_twiner') . "</option>\n";
+			$tablerow .= "</select>\n";
+			$tablerow .= "</td>\n";
+			$tablerow .= "</tr>\n";               
 		}
 
-		return $targettype_string;
+		return $tablerow;
     }
 
 	
-	public static function give_target_id_options_table_row($targettype)
+	public static function give_target_id_options_table_row()
 	{
-		global $DB, $USER, $target_id;
-
-
-		$target_id_string  = "<tr>\n";
-		$target_id_string .= "<td>" . get_string('select_user', 'local_solin_twiner') . ":</td>\n";
-		$target_id_string .= "<td>\n";
-		$target_id_string .= "<select name=\"trigger[target_id]\" onchange=\"document.twiner_form.submit();\">\n";
+		global $DB, $USER, $targettype, $target_id;
+		
+		$targettype_string = "select_user";
+		if ($targettype == 'course') $targettype_string = "select_course";
+		$tablerow  = "<tr>\n";
+		$tablerow .= "<td>" . get_string($targettype_string, 'local_solin_twiner') . ":</td>\n";
+		$tablerow .= "<td>\n";
+		$tablerow .= "<select name=\"trigger[target_id]\">\n";
 		
 		if ($targettype == 'individual')
 		{
@@ -44,11 +55,11 @@ class local_solin_twiner_form_helper
 			unset($users[$admin->id]);
 			if ($USER->id != $admin->id) unset($users[$USER->id]);
 
-			$target_id_string .= "<option value=\"" . $USER->id . "\" >" . get_string('self', 'local_solin_twiner') . "</option>\n";
-			if ($USER->id != $admin->id) $target_id_string .= "<option value=\"" . $admin->id . "\"" . (($admin->id == $target_id)?' selected':'') . ">" . get_string('admin') . "</option>\n";
+			$tablerow .= "<option value=\"" . $USER->id . "\" >" . get_string('self', 'local_solin_twiner') . "</option>\n";
+			if ($USER->id != $admin->id) $tablerow .= "<option value=\"" . $admin->id . "\"" . (($admin->id == $target_id)?' selected':'') . ">" . get_string('admin') . "</option>\n";
 			foreach($users as $user)
 			{
-				$target_id_string .= "<option value=\"" . $user->id . "\"" . (($user->id == $target_id)?' selected':'') . ">" . $user->firstname . " " . $user->lastname . "</option>\n";
+				$tablerow .= "<option value=\"" . $user->id . "\"" . (($user->id == $target_id)?' selected':'') . ">" . $user->firstname . " " . $user->lastname . "</option>\n";
 			}
 		}
 		else if ($targettype == 'course')
@@ -56,15 +67,69 @@ class local_solin_twiner_form_helper
 			$courses = $DB->get_records_sql('SELECT id, fullname, shortname FROM {course} WHERE id > 1');
 			foreach($courses as $course)
 			{
-				$target_id_string .= "<option value=\"" . $course->id . "\"" . (($course->id == $target_id)?' selected':'') . ">" . $course->fullname . "</option>\n";
+				$tablerow .= "<option value=\"" . $course->id . "\"" . (($course->id == $target_id)?' selected':'') . ">" . $course->fullname . "</option>\n";
 			}
 		}
 
-		$target_id_string .= "</select>\n";
-		$target_id_string .= "</td>\n";
-		$target_id_string .= "</tr>\n";
+		$tablerow .= "</select>\n";
+		$tablerow .= "</td>\n";
+		$tablerow .= "</tr>\n";
 
-		return $target_id_string;
+		return $tablerow;
+	}
+
+	
+	public static function give_subject_and_message_table_rows()
+	{
+		global $selected_trigger, $new_trigger;
+		
+		$tablerow = "";
+
+		if ($selected_trigger->action == 'notify')
+		{
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td>" . get_string('subject', 'local_solin_twiner') . ":</td>\n";
+			$tablerow .= "<td><input name=\"trigger[subject]\" value=\"" . ((isset($new_trigger['subject']))?$new_trigger['subject']:"") . "\" style=\"width: 410px;\" /></td>\n";
+			$tablerow .= "</tr>\n";
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td colspan=\"2\" height=\"5\"></td>\n";
+			$tablerow .= "</tr>\n";
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td valign=\"top\">" . get_string('message', 'local_solin_twiner') . ":</td>\n";
+			$tablerow .= "<td><textarea name=\"trigger[message]\" rows=\"5\" style=\"width: 400px;\">" . ((isset($new_trigger['message']))?$new_trigger['message']:"") . "</textarea></td>\n";
+			$tablerow .= "</tr>\n";
+			$tablerow .= "\n";					
+		}
+
+		return $tablerow;
+	}
+
+
+	public static function give_course_enrol_table_row()
+	{
+		global $selected_trigger, $DB;
+		
+		$tablerow = "";
+
+		if ($selected_trigger->action == 'enrol')
+		{
+			$courses = $DB->get_records_sql('SELECT id, fullname, shortname FROM {course} WHERE id > 1');
+
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td>" . get_string('select_course', 'local_solin_twiner') . ":</td>\n";
+			$tablerow .= "<td>\n";
+			$tablerow .= "<select name=\"trigger[course_id]\">\n";
+			foreach($courses as $course)
+			{
+				$tablerow .= "<option value=\"" . $course->id . "\"" . ((isset($new_trigger['course_id']) && $new_trigger['course_id'] == $course->id)?' selected':'') . ">" . $course->fullname . "</option>\n";
+			}
+			$tablerow .= "</select>\n";
+			$tablerow .= "</td>\n";
+			$tablerow .= "</tr>\n";
+			$tablerow .= "<tr>\n";
+		}
+
+		return $tablerow;
 	}
 
 }

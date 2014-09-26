@@ -14,16 +14,16 @@ class local_solin_twiner_observer {
 			{
 				switch ($trigger->action){
 					case "notify":
-						local_solin_twiner_notify($event,$trigger);
+						local_solin_twiner_notify($event, $trigger);
 						break;
-					case "enroll":
-						local_solin_twiner_enroll($event,$trigger);
+					case "enrol":
+						local_solin_twiner_enrol($event, $trigger);
 						break;
 					case "group":
-						local_solin_twiner_group($event,$trigger);
+						local_solin_twiner_group($event, $trigger);
 						break;
 					case "assign":
-						local_solin_twiner_assign($event,$trigger);
+						local_solin_twiner_assign($event, $trigger);
 						break;
 
 				}
