@@ -22,8 +22,8 @@ class local_solin_twiner_observer {
 					case "group":
 						local_solin_twiner_group($event, $trigger);
 						break;
-					case "assign":
-						local_solin_twiner_assign($event, $trigger);
+					case "cohort":
+						local_solin_twiner_assign_cohort($event, $trigger);
 						break;
 
 				}

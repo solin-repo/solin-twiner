@@ -1,4 +1,7 @@
 <?php
+//------------------------------------------------------------------------------
+// Create new trigger
+//------------------------------------------------------------------------------
 require_once('classes/form_helper.php');
 
 global $USER;
@@ -36,6 +39,10 @@ if ($event)
         }
     }
 }
+
+//------------------------------------------------------------------------------
+// Save the new trigger
+//------------------------------------------------------------------------------
 if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && isset($selected_trigger) && $target_id)
 {
 	if ($selected_trigger->action == "notify")
@@ -66,9 +73,40 @@ if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && is
 
 		if ($DB->insert_record('twiner_enrol', $insert)) $created = true;
 	}
-}
-?>
+	else if ($selected_trigger->action == "group")
+	{
+		if (isset($new_trigger['group_id']) && trim($new_trigger['group_id']) != "")
+		{
+			$insert = new stdClass();
+			$insert->creator_id = $USER->id;
+			$insert->trigger_id = $selected_trigger->id;
+			$insert->user_id = $target_id;
+			$insert->course_id = $new_trigger['course_id'];
+			$insert->group_id = $new_trigger['group_id'];
 
+			if ($DB->insert_record('twiner_groups', $insert)) $created = true;
+		}
+	}
+	else if ($selected_trigger->action == "cohort")
+	{
+		if (isset($new_trigger['cohort_id']) && trim($new_trigger['cohort_id']) != "")
+		{
+			$insert = new stdClass();
+			$insert->creator_id = $USER->id;
+			$insert->trigger_id = $selected_trigger->id;
+			$insert->user_id = $target_id;
+			$insert->cohort_id = $new_trigger['cohort_id'];
+
+			if ($DB->insert_record('twiner_cohorts', $insert)) $created = true;
+		}
+	}
+}
+
+
+//------------------------------------------------------------------------------
+// New trigger form
+//------------------------------------------------------------------------------
+?>
 <h4><?= get_string('create_new_trigger', 'local_solin_twiner'); ?></h4>
 <? if (!$created): ?>
 	<?php if ($error != false) echo "<p style=\"color: red;\">" . get_string($error, 'local_solin_twiner') . "</p>\n"; ?>

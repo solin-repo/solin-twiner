@@ -48,9 +48,15 @@ function local_solin_twiner_enrol($event, $trigger) {
 		$enrollment_plugin = enrol_get_plugin('manual');
 		foreach ($enrollments as $enrollment)
 		{
+			// Check if it's about a new user
+			$tmp_user_id = $enrollment->user_id;
+			if ($enrollment->user_id == -1) $tmp_user_id = $event->objectid;
+			
+			// Check if the user is not already enrolled
 			$current_instance = false;
-			if (!is_enrolled(context_course::instance($enrollment->course_id), $enrollment->user_id))
+			if (!is_enrolled(context_course::instance($enrollment->course_id), $tmp_user_id))
 			{
+				$role_id = $DB->get_field_sql("SELECT id FROM {role} WHERE shortname = 'student';");
 				if ($instances = enrol_get_instances($enrollment->course_id, false)) 
 				{
 					foreach ($instances as $instance) 
@@ -63,7 +69,7 @@ function local_solin_twiner_enrol($event, $trigger) {
 					}
 				}
 				
-				if ($current_instance !== false) $enrollment_plugin->enrol_user($current_instance, $enrollment->user_id);
+				if ($current_instance !== false) $enrollment_plugin->enrol_user($current_instance, $tmp_user_id, $role_id, time());
 			}
 		}
 	}
@@ -76,6 +82,27 @@ function local_solin_twiner_enrol($event, $trigger) {
  */
 function local_solin_twiner_group($event, $trigger) {
     global $DB;
+
+    $groups = $DB->get_records('twiner_groups', array('trigger_id' => $trigger->id));
+    if (count($groups))
+	{
+        foreach ($groups as $group)
+        {
+			// Check if it's about a new user
+			$tmp_user_id = $group->user_id;
+			if ($group->user_id == -1) $tmp_user_id = $event->objectid;
+
+			// Check if the user is not in the group already
+			if (!count($DB->get_records('groups_members', array('groupid' => $group->group_id, 'userid' => $tmp_user_id))))
+			{
+				$record = new stdClass();
+				$record->groupid = $group->group_id;
+				$record->userid = $tmp_user_id;
+				$record->timeadded = time();
+				$DB->insert_record('groups_members', $record);
+			}
+		}
+	}
 }
 
 /**
@@ -83,8 +110,29 @@ function local_solin_twiner_group($event, $trigger) {
  * @param $event    - handled event
  * @param $trigger  - triggers from DB
  */
-function local_solin_twiner_assign($event, $trigger) {
+function local_solin_twiner_assign_cohort($event, $trigger) {
     global $DB;
+
+	$cohorts = $DB->get_records('twiner_cohorts', array('trigger_id' => $trigger->id));
+    if (count($cohorts))
+	{
+        foreach ($cohorts as $cohort)
+        {
+			// Check if it's about a new user
+			$tmp_user_id = $cohort->user_id;
+			if ($cohort->user_id == -1) $tmp_user_id = $event->objectid;
+
+			// Check if the user is not in the group already
+			if (!count($DB->get_records('cohort_members', array('cohortid' => $cohort->cohort_id, 'userid' => $tmp_user_id))))
+			{
+				$record = new stdClass();
+				$record->cohortid = $cohort->cohort_id;
+				$record->userid = $tmp_user_id;
+				$record->timeadded = time();
+				$DB->insert_record('cohort_members', $record);
+			}
+		}
+	}
 }
 
 

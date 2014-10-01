@@ -4,16 +4,22 @@ defined('MOODLE_INTERNAL') || die();
 class local_solin_twiner_form_helper 
 {
 	public static function give_table_rows()
-	{	
+	{
+		global $new_trigger;
+
 		$table_rows = "";
 		$table_rows .= self::give_targettype_table_row();
 		$table_rows .= self::give_target_id_options_table_row();
 		$table_rows .= self::give_subject_and_message_table_rows();
-		$table_rows .= self::give_course_enrol_table_row();
+		$table_rows .= self::give_course_table_row();
+		$table_rows .= self::give_cohort_table_row();
+		if (isset($new_trigger['course_id'])) $table_rows .= self::give_groups_table_row();
 
 		return $table_rows;
 
 	}
+
+
 	public static function give_targettype_table_row() 
 	{
 		global $selected_trigger, $targettype;
@@ -35,11 +41,11 @@ class local_solin_twiner_form_helper
 
 		return $tablerow;
     }
-
 	
+
 	public static function give_target_id_options_table_row()
 	{
-		global $DB, $USER, $targettype, $target_id;
+		global $DB, $USER, $selected_trigger, $targettype, $target_id;
 		
 		$targettype_string = "select_user";
 		if ($targettype == 'course') $targettype_string = "select_course";
@@ -55,6 +61,7 @@ class local_solin_twiner_form_helper
 			unset($users[$admin->id]);
 			if ($USER->id != $admin->id) unset($users[$USER->id]);
 
+			if ($selected_trigger->action != 'notification')	$tablerow .= "<option value=\"-1\" >" . get_string('newly_created', 'local_solin_twiner') . "</option>\n";
 			$tablerow .= "<option value=\"" . $USER->id . "\" >" . get_string('self', 'local_solin_twiner') . "</option>\n";
 			if ($USER->id != $admin->id) $tablerow .= "<option value=\"" . $admin->id . "\"" . (($admin->id == $target_id)?' selected':'') . ">" . get_string('admin') . "</option>\n";
 			foreach($users as $user)
@@ -105,23 +112,80 @@ class local_solin_twiner_form_helper
 	}
 
 
-	public static function give_course_enrol_table_row()
+	public static function give_course_table_row()
 	{
-		global $selected_trigger, $DB;
+		global $selected_trigger, $new_trigger, $DB;
 		
 		$tablerow = "";
 
-		if ($selected_trigger->action == 'enrol')
+		if ($selected_trigger->action == 'enrol' || $selected_trigger->action == 'group')
 		{
 			$courses = $DB->get_records_sql('SELECT id, fullname, shortname FROM {course} WHERE id > 1');
 
 			$tablerow .= "<tr>\n";
 			$tablerow .= "<td>" . get_string('select_course', 'local_solin_twiner') . ":</td>\n";
 			$tablerow .= "<td>\n";
-			$tablerow .= "<select name=\"trigger[course_id]\">\n";
+			$tablerow .= "<select name=\"trigger[course_id]\"" . ($selected_trigger->action == 'group'?" onchange=\"document.twiner_form.submit();":"")  . "\">\n";
 			foreach($courses as $course)
 			{
 				$tablerow .= "<option value=\"" . $course->id . "\"" . ((isset($new_trigger['course_id']) && $new_trigger['course_id'] == $course->id)?' selected':'') . ">" . $course->fullname . "</option>\n";
+			}
+			$tablerow .= "</select>\n";
+			$tablerow .= "</td>\n";
+			$tablerow .= "</tr>\n";
+			$tablerow .= "<tr>\n";
+		}
+
+		return $tablerow;
+	}
+
+
+	public static function give_groups_table_row()
+	{
+		global $selected_trigger, $new_trigger, $DB;
+
+		$tablerow = "";
+
+		if ($selected_trigger->action == 'group')
+		{
+			$groups = $DB->get_records_sql('SELECT id, name FROM {groups} WHERE courseid =' . $new_trigger['course_id']);
+
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td>" . get_string('select_group', 'local_solin_twiner') . ":</td>\n";
+			$tablerow .= "<td>\n";
+			$tablerow .= "<select name=\"trigger[group_id]\">\n";
+			foreach($groups as $group)
+			{
+				$tablerow .= "<option value=\"" . $group->id . "\"" . ((isset($new_trigger['group_id']) && $new_trigger['group_id'] == $group->id)?' selected':'') . ">" . $group->name . "</option>\n";
+			}
+			$tablerow .= "</select>\n";
+			$tablerow .= "</td>\n";
+			$tablerow .= "</tr>\n";
+			$tablerow .= "<tr>\n";
+		}
+
+		return $tablerow;
+	}
+
+
+	public static function give_cohort_table_row()
+	{
+		global $selected_trigger, $new_trigger, $DB;
+
+		$tablerow = "";
+
+		if ($selected_trigger->action == 'cohort')
+		{
+			// Fixme - cohorts like this, or depending on the contextid
+			$cohorts = $DB->get_records_sql('SELECT id, name FROM {cohort}');
+
+			$tablerow .= "<tr>\n";
+			$tablerow .= "<td>" . get_string('select_cohort', 'local_solin_twiner') . ":</td>\n";
+			$tablerow .= "<td>\n";
+			$tablerow .= "<select name=\"trigger[cohort_id]\">\n";
+			foreach($cohorts as $cohort)
+			{
+				$tablerow .= "<option value=\"" . $cohort->id . "\"" . ((isset($new_trigger['cohort_id']) && $new_trigger['cohort_id'] == $cohort->id)?' selected':'') . ">" . $cohort->name . "</option>\n";
 			}
 			$tablerow .= "</select>\n";
 			$tablerow .= "</td>\n";
