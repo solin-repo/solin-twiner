@@ -5,25 +5,25 @@ class local_solin_twiner_observer {
 
 	public static function check_user_defined_handlers($event) {
         global $DB;
-        $triggers = $DB->get_records('twiner_triggers', array('eventname' => $event->eventname));
+        $twiner_events = $DB->get_records('twiner_events', array('eventname' => $event->eventname));
 		//print_object($event);
-		//print_object($triggers);
-        if(count($triggers))
+		//print_object($twiner_events);
+        if(count($twiner_events))
         {
-			foreach($triggers as $trigger)
+			foreach($twiner_events as $twiner_event)
 			{
-				switch ($trigger->action){
+				switch ($twiner_event->action){
 					case "notify":
-						local_solin_twiner_notify($event, $trigger);
+						local_solin_twiner_notify($event, $twiner_event);
 						break;
 					case "enrol":
-						local_solin_twiner_enrol($event, $trigger);
+						local_solin_twiner_enrol($event, $twiner_event);
 						break;
 					case "group":
-						local_solin_twiner_group($event, $trigger);
+						local_solin_twiner_group($event, $twiner_event);
 						break;
 					case "cohort":
-						local_solin_twiner_assign_cohort($event, $trigger);
+						local_solin_twiner_assign_cohort($event, $twiner_event);
 						break;
 
 				}
@@ -32,3 +32,4 @@ class local_solin_twiner_observer {
     }
 
 }
+?>

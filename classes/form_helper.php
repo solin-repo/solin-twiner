@@ -52,7 +52,7 @@ class local_solin_twiner_form_helper
 		$tablerow  = "<tr>\n";
 		$tablerow .= "<td>" . get_string($targettype_string, 'local_solin_twiner') . ":</td>\n";
 		$tablerow .= "<td>\n";
-		$tablerow .= "<select name=\"trigger[target_id]\">\n";
+		$tablerow .= "<select name=\"target_id\">\n";
 		
 		if ($targettype == 'individual')
 		{
@@ -60,8 +60,9 @@ class local_solin_twiner_form_helper
 			$admin = get_admin();
 			unset($users[$admin->id]);
 			if ($USER->id != $admin->id) unset($users[$USER->id]);
-
-			if ($selected_trigger->action != 'notification')	$tablerow .= "<option value=\"-1\" >" . get_string('newly_created', 'local_solin_twiner') . "</option>\n";
+			// Fixme - when newly created / updated, or just the user it's about
+			//if ($selected_trigger->eventname == '\core\event\user_created' || $selected_trigger->eventname == '\core\event\user_updated')	
+				$tablerow .= "<option value=\"-1\" >" . get_string('newly_created', 'local_solin_twiner') . "</option>\n";
 			$tablerow .= "<option value=\"" . $USER->id . "\" >" . get_string('self', 'local_solin_twiner') . "</option>\n";
 			if ($USER->id != $admin->id) $tablerow .= "<option value=\"" . $admin->id . "\"" . (($admin->id == $target_id)?' selected':'') . ">" . get_string('admin') . "</option>\n";
 			foreach($users as $user)
@@ -197,3 +198,4 @@ class local_solin_twiner_form_helper
 	}
 
 }
+?>

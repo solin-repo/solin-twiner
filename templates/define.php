@@ -7,7 +7,7 @@ if (is_siteadmin())
 
 	if ($remove_event > 0)
 	{
-		$DB->delete_records('twiner_triggers', array('id' => $remove_event));
+		$DB->delete_records('twiner_events', array('id' => $remove_event));
 		echo "<p>" . get_string('event_removed', 'local_solin_twiner') . "</p>\n";
 	}
 	
@@ -22,13 +22,13 @@ if (is_siteadmin())
 			$record->eventname = $eventname;
 			$record->action = $actionname;
 
-			if ($DB->insert_record('twiner_triggers', $record)) $event_created = true;
+			if ($DB->insert_record('twiner_events', $record)) $event_created = true;
 		}
 	}
 
-	$current_triggers = $DB->get_records('twiner_triggers');
+	$current_events = $DB->get_records('twiner_events', NULL, 'eventname, action');
 
-	if (count($current_triggers) > 0)
+	if (count($current_events) > 0)
 	{
 		?>
 		<h4><?= get_string('current_events', 'local_solin_twiner'); ?></h4>
@@ -40,12 +40,12 @@ if (is_siteadmin())
 			<th>&nbsp;</th>
 		</tr>
 		<?php
-		foreach($current_triggers as $current_trigger)
+		foreach($current_events as $current_event)
 		{
 			echo "<tr>\n";
-				echo "<td>" . $current_trigger->eventname . "</td>\n";
-				echo "<td>" . $current_trigger->action . "</td>\n";
-				echo "<td>" . html_writer::link($twiner_url . '?type=3&remove_event=' . $current_trigger->id, get_string('remove', 'local_solin_twiner')) . "</td>\n";
+				echo "<td>" . $current_event->eventname . "</td>\n";
+				echo "<td>" . $current_event->action . "</td>\n";
+				echo "<td>" . html_writer::link($twiner_url . '?type=3&remove_event=' . $current_event->id, get_string('remove', 'local_solin_twiner')) . "</td>\n";
 			echo "</tr>\n";
 		}
 		?>

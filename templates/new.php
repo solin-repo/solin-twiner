@@ -8,30 +8,30 @@ global $USER;
 $created = false;
 $error = false;
 
-$available_events = $DB->get_records_sql('SELECT id, eventname FROM {twiner_triggers} GROUP BY eventname');
+$available_events = $DB->get_records_sql('SELECT id, eventname FROM {twiner_events} GROUP BY eventname');
 
 $new_trigger = optional_param_array('trigger', array(), PARAM_RAW);
-$event = (isset($new_trigger['event'])?$new_trigger['event']:0);
-$action_id = (isset($new_trigger['action'])?$new_trigger['action']:0);
+$event_id = optional_param('event_id', 0, PARAM_RAW);
+$action_id = optional_param('action_id', 0, PARAM_RAW);
+$target_id = optional_param('target_id', 0, PARAM_RAW);
 $targettype = (isset($new_trigger['targettype'])?$new_trigger['targettype']:'individual');
-$target_id = (isset($new_trigger['target_id'])?$new_trigger['target_id']:0);
 
-print_object($new_trigger); 
+//print_object($new_trigger); 
 
-if ($event)
+if ($event_id)
 {
-    $eventname = $DB->get_record('twiner_triggers', array('id' => $event), 'eventname');
+    $eventname = $DB->get_record('twiner_events', array('id' => $event_id), 'eventname');
     if (!$eventname)
     {
-        $event = false;
+        $event_id = false;
     }
 	else
     {
-        $available_actions = $DB->get_records_sql('SELECT id, action FROM {twiner_triggers} WHERE eventname = ? GROUP BY action', array($eventname->eventname));
-        if ($action_id && $DB->record_exists('twiner_triggers', array('id' => $action_id)))
+        $available_actions = $DB->get_records_sql('SELECT id, action FROM {twiner_events} WHERE eventname = ? GROUP BY action', array($eventname->eventname));
+        if ($action_id && $DB->record_exists('twiner_events', array('id' => $action_id)))
         {
-            $selected_trigger = $DB->get_record('twiner_triggers', array('id' => $action_id));
-			print_object($selected_trigger);
+            $selected_trigger = $DB->get_record('twiner_events', array('id' => $action_id));
+			//print_object($selected_trigger);
         }
 		else
 		{
@@ -45,6 +45,44 @@ if ($event)
 //------------------------------------------------------------------------------
 if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && isset($selected_trigger) && $target_id)
 {
+	if ($selected_trigger->action == "notify")
+	{
+		if (trim($new_trigger['subject']) == "")										$error = "no_subject";
+		else if (trim(strip_tags($new_trigger['message'])) == "")						$error = "no_message";
+	}
+	else if ($selected_trigger->action == "group")
+	{
+		if (!isset($new_trigger['group_id']) || trim($new_trigger['group_id']) == "")	$error = "no_group";
+	}
+	else if ($selected_trigger->action == "cohort")
+	{
+		if (!isset($new_trigger['cohort_id']) || trim($new_trigger['cohort_id']) == "")	$error = "no_cohort";
+	}
+
+	if (!$error)
+	{
+		$record = new stdClass();
+		$record->creator_id = $USER->id;
+		$record->event_id = $selected_trigger->id;
+		$record->target_id = $target_id;
+
+		if ($new_trigger_id = $DB->insert_record('twiner_triggers', $record)) $created = true;
+
+		if (count($new_trigger) > 0)
+		{
+			foreach ($new_trigger as $name => $value)
+			{
+				$additional_record = new stdClass();
+				$additional_record->trigger_id = $new_trigger_id;
+				$additional_record->name = $name;
+				$additional_record->value = $value;
+
+				$DB->insert_record('twiner_trigger_info', $additional_record);
+			}
+		}
+	}
+
+	/*
 	if ($selected_trigger->action == "notify")
 	{
 		if (trim($new_trigger['subject']) == "")						$error = "no_subject";
@@ -100,6 +138,7 @@ if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && is
 			if ($DB->insert_record('twiner_cohorts', $insert)) $created = true;
 		}
 	}
+	*/
 }
 
 
@@ -115,23 +154,23 @@ if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && is
 			<tr>
 				<td width="120"><?= get_string('select_event', 'local_solin_twiner'); ?>:</td>
 				<td>
-					<select name="trigger[event]" onchange="<?= (($event)?"document.getElementById('trigger_action').value = 0; ": "") ?>document.twiner_form.submit();">
+					<select name="event_id" onchange="<?= (($event_id)?"document.getElementById('trigger_action').value = 0; ": "") ?>document.twiner_form.submit();">
 						<option value="0" <?= ($action_id)?'':' selected'; ?>><?= get_string('default_event', 'local_solin_twiner'); ?></option>
 						<?
-						foreach($available_events as $trigger)
+						foreach($available_events as $available_event)
 						{
-							$name = call_user_func(array($trigger->eventname, 'get_name'));
-							echo '<option value="' . $trigger->id . '" ' . (($trigger->id == $event)?'selected':'') . ' >' . $name . '</option>';
+							$name = call_user_func(array($available_event->eventname, 'get_name'));
+							echo '<option value="' . $available_event->id . '" ' . (($available_event->id == $event_id)?'selected':'') . ' >' . $name . '</option>';
 						}
 						?>
 					</select>
 				</td>
 			</tr>
-			<? if ($event): ?>
+			<? if ($event_id): ?>
 			<tr>
 				<td><?= get_string('select_action', 'local_solin_twiner'); ?>:</td>
 				<td>
-					<select id="trigger_action" name="trigger[action]" onchange="document.twiner_form.submit();">
+					<select id="trigger_action" name="action_id" onchange="document.twiner_form.submit();">
 						<option value="0" <?= ($action_id)?'':' selected'; ?>><?= get_string('default_action','local_solin_twiner'); ?></option>
 						<?
 						foreach($available_actions as $action)
@@ -146,7 +185,7 @@ if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && is
 					<?= local_solin_twiner_form_helper::give_table_rows(); ?>
 				<? endif; ?>
 			<? endif; ?>
-			<? if ($event && $action_id): ?>
+			<? if ($event_id && $action_id): ?>
 			<tr>
 				<td colspan="2">
 					<input type="button" name="create" value="<?= get_string('submit'); ?>" class="btn" onclick="document.twiner_form.add_trigger.value = 1;document.twiner_form.submit();" />
