@@ -1,4 +1,6 @@
 <?php
+// Fixme - add readme
+
 
 defined('MOODLE_INTERNAL') || die();
 

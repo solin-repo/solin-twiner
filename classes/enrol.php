@@ -30,7 +30,7 @@ class twiner_enrol extends twiner_info
 					echo "<td>" . call_user_func(array($trigger->eventname, 'get_name')) . "</td>\n";
 					echo "<td>" . (($trigger->target_id > 0)?fullname($user):get_string('newly_created', 'local_solin_twiner')) . "</td>\n";
 					echo "<td>" . $course->fullname . "</td>\n";
-					echo "<td>" . html_writer::link($twiner_url . '?type=2&remove=' . $trigger->id, get_string('remove', 'local_solin_twiner')) . "</td>\n";
+					echo "<td style=\"text-align: right; padding-right: 10px;\">" . html_writer::link($twiner_url . '?type=2&remove=' . $trigger->id, get_string('remove', 'local_solin_twiner')) . "</td>\n";
 				echo "</tr>\n";
 			}
 			echo "</table>\n";

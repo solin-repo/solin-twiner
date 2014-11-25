@@ -16,8 +16,6 @@ $action_id = optional_param('action_id', 0, PARAM_RAW);
 $target_id = optional_param('target_id', 0, PARAM_RAW);
 $targettype = (isset($new_trigger['targettype'])?$new_trigger['targettype']:'individual');
 
-//print_object($new_trigger); 
-
 if ($event_id)
 {
     $eventname = $DB->get_record('twiner_events', array('id' => $event_id), 'eventname');
@@ -28,10 +26,10 @@ if ($event_id)
 	else
     {
         $available_actions = $DB->get_records_sql('SELECT id, action FROM {twiner_events} WHERE eventname = ? GROUP BY action', array($eventname->eventname));
-        if ($action_id && $DB->record_exists('twiner_events', array('id' => $action_id)))
+        
+		if ($action_id && $DB->record_exists('twiner_events', array('id' => $action_id)))
         {
             $selected_trigger = $DB->get_record('twiner_events', array('id' => $action_id));
-			//print_object($selected_trigger);
         }
 		else
 		{
@@ -45,6 +43,7 @@ if ($event_id)
 //------------------------------------------------------------------------------
 if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && isset($selected_trigger) && $target_id)
 {
+	// Fixme - checks here or checks from class
 	if ($selected_trigger->action == "notify")
 	{
 		if (trim($new_trigger['subject']) == "")										$error = "no_subject";
@@ -59,6 +58,7 @@ if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && is
 		if (!isset($new_trigger['cohort_id']) || trim($new_trigger['cohort_id']) == "")	$error = "no_cohort";
 	}
 
+	// Fixme - save here, or save from class
 	if (!$error)
 	{
 		$record = new stdClass();
@@ -81,64 +81,6 @@ if (isset($_REQUEST['add_trigger']) && trim($_REQUEST['add_trigger']) == 1 && is
 			}
 		}
 	}
-
-	/*
-	if ($selected_trigger->action == "notify")
-	{
-		if (trim($new_trigger['subject']) == "")						$error = "no_subject";
-		else if (trim(strip_tags($new_trigger['message'])) == "")		$error = "no_message";
-
-		if (!$error)
-		{
-			$insert = new stdClass();
-			$insert->creator_id = $USER->id;
-			$insert->trigger_id = $selected_trigger->id;
-			$insert->targettype = $targettype;
-			$insert->target_id = $target_id;
-			$insert->subject = $new_trigger['subject'];
-			$insert->body = $new_trigger['message'];
-
-			if ($DB->insert_record('twiner_notifications', $insert)) $created = true;
-		}
-	}
-	else if ($selected_trigger->action == "enrol")
-	{
-		$insert = new stdClass();
-		$insert->creator_id = $USER->id;
-		$insert->trigger_id = $selected_trigger->id;
-		$insert->user_id = $target_id;
-		$insert->course_id = $new_trigger['course_id'];
-
-		if ($DB->insert_record('twiner_enrol', $insert)) $created = true;
-	}
-	else if ($selected_trigger->action == "group")
-	{
-		if (isset($new_trigger['group_id']) && trim($new_trigger['group_id']) != "")
-		{
-			$insert = new stdClass();
-			$insert->creator_id = $USER->id;
-			$insert->trigger_id = $selected_trigger->id;
-			$insert->user_id = $target_id;
-			$insert->course_id = $new_trigger['course_id'];
-			$insert->group_id = $new_trigger['group_id'];
-
-			if ($DB->insert_record('twiner_groups', $insert)) $created = true;
-		}
-	}
-	else if ($selected_trigger->action == "cohort")
-	{
-		if (isset($new_trigger['cohort_id']) && trim($new_trigger['cohort_id']) != "")
-		{
-			$insert = new stdClass();
-			$insert->creator_id = $USER->id;
-			$insert->trigger_id = $selected_trigger->id;
-			$insert->user_id = $target_id;
-			$insert->cohort_id = $new_trigger['cohort_id'];
-
-			if ($DB->insert_record('twiner_cohorts', $insert)) $created = true;
-		}
-	}
-	*/
 }
 
 

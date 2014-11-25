@@ -7,4 +7,11 @@ As an example, let’s say you want receive an email whenever a new user registe
 
 Now, whenever a new user registers (or is otherwise created, of course), you automatically receive a Moodle notification about it!
 
-Another example is: if a new user is created, enroll this user into a specific set of courses.
+Another example is: if a new user is created, enroll this user into a specific course or set of courses.
+
+
+
+// Fixme - add readme for
+// classes with static function for display
+// 
+The Solin Twiner plugin currently knows 4 different type of actions, notify, enrol, put in a group or put in a cohort. Each action has it's own class in the classes map. Each class has a function called "get_and_print_action_triggers" to display the overview of the triggers in the list. 

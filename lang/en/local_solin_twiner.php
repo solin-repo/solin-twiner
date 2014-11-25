@@ -33,6 +33,7 @@ $string['groups'] = 'Groups';
 $string['individual'] = 'Individual';
 $string['list_of_triggers'] = 'Currently activated triggers';
 $string['message'] = 'Message';
+// Fixme - string newly created...
 $string['newly_created'] = 'Newly created / updated';
 $string['no_cohort'] = 'No cohort! Please select a cohort.';
 $string['no_group'] = 'No group! Please select a group.';

@@ -60,6 +60,7 @@ class local_solin_twiner_form_helper
 			$admin = get_admin();
 			unset($users[$admin->id]);
 			if ($USER->id != $admin->id) unset($users[$USER->id]);
+			// Fixme - students only to self
 			// Fixme - when newly created / updated, or just the user it's about
 			//if ($selected_trigger->eventname == '\core\event\user_created' || $selected_trigger->eventname == '\core\event\user_updated')	
 				$tablerow .= "<option value=\"-1\" >" . get_string('newly_created', 'local_solin_twiner') . "</option>\n";
@@ -177,7 +178,6 @@ class local_solin_twiner_form_helper
 
 		if ($selected_trigger->action == 'cohort')
 		{
-			// Fixme - cohorts like this, or depending on the contextid
 			$cohorts = $DB->get_records_sql('SELECT id, name FROM {cohort}');
 
 			$tablerow .= "<tr>\n";
